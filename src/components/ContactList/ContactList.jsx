@@ -1,29 +1,30 @@
 import { StyledBtn, StyledItem, StyledList } from './ContactList.styled';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectContacts, selectFilter } from 'redux/selectors';
-import { deleteContact } from 'redux/contactsSlice';
+import { selectContactsObj } from 'redux/selectors';
+import { deleteContact, fetchContacts } from 'redux/operations';
+import Loader from 'components/Loader';
 
 const ContactList = () => {
+  const { contacts, loading, error } = useSelector(selectContactsObj);
   const dispatch = useDispatch();
-  const contacts = useSelector(selectContacts);
-  const filter = useSelector(selectFilter);
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
 
-  const filterData = (data, filter) => {
-    return data?.filter(item =>
-      item.name.toLowerCase().includes(filter.toLowerCase())
-    );
+  const onDelete = id => {
+    dispatch(deleteContact(id));
   };
-  const filteredData = filterData(contacts, filter);
 
   return (
     <>
       <StyledList>
-        {filteredData?.map(cont => (
+        {loading && <Loader />}
+        {error && <h2>{error}</h2>}
+        {contacts?.map(cont => (
           <StyledItem key={cont.id} id={cont.id}>
-            {cont.name}: {cont.number}
-            <StyledBtn onClick={() => dispatch(deleteContact(cont.id))}>
-              Delete
-            </StyledBtn>
+            {cont.name}: {cont.phone}
+            <StyledBtn onClick={() => onDelete(cont.id)}>Delete</StyledBtn>
           </StyledItem>
         ))}
       </StyledList>
